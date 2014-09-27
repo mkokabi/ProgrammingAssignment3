@@ -22,11 +22,17 @@ rankhospital <- function(state, outcomeName, num = "best") {
     }
     
     outcomeInState <- outcome[outcome$State == state,c(2, colIndex)]
+    #print (outcomeInState)
+
     if (nrow(outcomeInState) == 0)
     {
         stop('invalid state')
         return;
     }
+    
+    availOutcomesInState <- as.numeric(outcomeInState[,2])
+    availOutcomesInState <- availOutcomesInState[!is.na(availOutcomesInState)]
+    # View(availOutcomesInState)
     
     ## Return hospital name in that state with the given rank
     hospitalsOrdered<-outcomeInState[
@@ -34,18 +40,19 @@ rankhospital <- function(state, outcomeName, num = "best") {
             as.numeric(outcomeInState[,2]), 
             outcomeInState$Hospital.Name,
             na.last = TRUE),
-        1]
+        c(1,2)]
+    availHospitalsOrdered <- hospitalsOrdered[hospitalsOrdered[2]!="Not Available",c(1,2)]
     
-    ranked <- rank(hospitalsOrdered)
-    print(ranked)
+#     ranked <- rank(availOutcomesInState, na.last = TRUE,ties.method = "first")
+#     View(ranked)
     
     ## 30-day death rate
     if (num == "best")
-        result <- hospitalsOrdered[ranked[nrow(ranked)]]
+        result <- availHospitalsOrdered[1,1]
     else if (num == "worst")
-        result <- hospitalsOrdered[ranked[nrow(ranked)]]
+        result <- availHospitalsOrdered[nrow(availHospitalsOrdered),1]
     else
-        result <- hospitalsOrdered[ranked[num]]
+        result <- availHospitalsOrdered[num,1]
     
     result
 }
